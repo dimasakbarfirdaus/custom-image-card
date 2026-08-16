@@ -1,49 +1,3 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generator Clickable Card</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 500px; margin: 30px auto; padding: 20px; background: #f4f6f9; }
-    .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h2 { margin-top: 0; color: #111; font-size: 20px; }
-    label { font-weight: bold; font-size: 13px; margin-top: 12px; display: block; color: #444; }
-    input[type="text"], input[type="file"] { width: 100%; padding: 10px; margin: 6px 0 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-    button { width: 100%; padding: 12px; background: #0070f3; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; margin-top: 10px; }
-    button:hover { background: #0059c1; }
-    #status { margin-top: 12px; font-weight: bold; color: #0070f3; font-size: 14px; text-align: center; }
-    .result-box { margin-top: 20px; padding: 12px; background: #eef6ff; border: 1px dashed #0070f3; border-radius: 6px; }
-  </style>
-</head>
-<body>
-
-<div class="card">
-  <h2>Generator Card Medsos</h2>
-  
-  <label>Nama Domain / Brand (Footer Card)</label>
-  <input type="text" id="site" placeholder="Contoh: LUNA.COM">
-
-  <label>Judul Postingan / Video</label>
-  <input type="text" id="title" placeholder="Contoh: Ternyata Ini Cinta - Full Episode">
-
-  <label>Upload Foto Preview</label>
-  <input type="file" id="fileInput" accept="image/*">
-
-  <label>Link Affiliate Shopee Tujuan</label>
-  <input type="text" id="url" placeholder="https://s.shopee.co.id/xxx">
-
-  <button onclick="processAndGenerate()">Upload & Buat Link</button>
-  
-  <div id="status"></div>
-
-  <div class="result-box" id="resultContainer" style="display:none;">
-    <label>Hasil Link (Siap Diposting):</label>
-    <input type="text" id="resultLink" readonly onclick="this.select()">
-    <small style="color:#666; display:block; margin-top:5px;">Klik teks di atas untuk menyalin.</small>
-  </div>
-</div>
-
 <script>
 async function processAndGenerate() {
   const site = document.getElementById('site').value;
@@ -66,8 +20,8 @@ async function processAndGenerate() {
     formData.append('reqtype', 'fileupload');
     formData.append('fileToUpload', fileInput.files[0]);
 
-    // Mengunggah ke hosting gambar publik (Catbox) yang memberikan Direct Image Link murni (.jpg / .png)
-    const response = await fetch('https://catbox.moe/user/api.php', {
+    // Mengunggah ke API internal Vercel (/api/upload)
+    const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData
     });
@@ -75,20 +29,17 @@ async function processAndGenerate() {
     const rawImgUrl = await response.text();
 
     if (rawImgUrl && rawImgUrl.startsWith('http')) {
-      const finalLink = `${window.location.origin}/go?site=${encodeURIComponent(site)}&title=${encodeURIComponent(title)}&img=${encodeURIComponent(rawImgUrl.trim())}&url=${encodeURIComponent(url)}`;
+      const finalLink = `${window.location.origin}/go?site=${encodeURIComponent(site)}&title=${encodeURIComponent(title)}&img=${encodeURIComponent(rawImgUrl)}&url=${encodeURIComponent(url)}`;
 
       status.innerText = "Berhasil!";
       resultContainer.style.display = 'block';
       resultLink.value = finalLink;
     } else {
-      status.innerText = "Gagal mengunggah gambar. Coba lagi.";
+      status.innerText = "Gagal mengunggah gambar. Pastikan ukuran file di bawah 5MB.";
     }
   } catch (err) {
     console.error(err);
-    status.innerText = "Terjadi kesalahan upload.";
+    status.innerText = "Terjadi kesalahan koneksi saat upload.";
   }
 }
 </script>
-
-</body>
-</html>
