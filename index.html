@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Card Generator</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
+    input, button { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
+    button { background: #0070f3; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Generator Clickable Card</h2>
+  <input type="text" id="site" placeholder="Nama Domain (misal: LUNA.COM)">
+  <input type="text" id="title" placeholder="Judul Postingan">
+  <input type="text" id="img" placeholder="URL Foto Product">
+  <input type="text" id="url" placeholder="Link Affiliate Shopee">
+  <button onclick="generate()">Buat Link</button>
+  
+  <h3>Hasil Link:</h3>
+  <input type="text" id="result" readonly>
+
+  <script>
+    function generate() {
+      const site = encodeURIComponent(document.getElementById('site').value);
+      const title = encodeURIComponent(document.getElementById('title').value);
+      const img = encodeURIComponent(document.getElementById('img').value);
+      const url = encodeURIComponent(document.getElementById('url').value);
+      
+      const link = `${window.location.origin}/go?site=${site}&title=${title}&img=${img}&url=${url}`;
+      document.getElementById('result').value = link;
+    }
+  </script>
+</body>
+</html>
