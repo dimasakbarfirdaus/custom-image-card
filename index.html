@@ -2,34 +2,96 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Card Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generator Clickable Card (With Image Upload)</title>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
-    input, button { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
-    button { background: #0070f3; color: white; border: none; cursor: pointer; }
+    body { font-family: Arial, sans-serif; max-width: 500px; margin: 30px auto; padding: 20px; background: #f9f9f9; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; color: #333; }
+    label { font-weight: bold; font-size: 14px; margin-top: 10px; display: block; }
+    input[type="text"], input[type="file"] { width: 100%; padding: 10px; margin: 6px 0 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #0070f3; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; }
+    button:hover { background: #0051a8; }
+    #status { margin-top: 10px; font-weight: bold; color: #666; font-size: 14px; }
+    .result-box { margin-top: 20px; padding: 10px; background: #eef6ff; border: 1px dashed #0070f3; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <h2>Generator Clickable Card</h2>
-  <input type="text" id="site" placeholder="Nama Domain (misal: LUNA.COM)">
-  <input type="text" id="title" placeholder="Judul Postingan">
-  <input type="text" id="img" placeholder="URL Foto Product">
-  <input type="text" id="url" placeholder="Link Affiliate Shopee">
-  <button onclick="generate()">Buat Link</button>
-  
-  <h3>Hasil Link:</h3>
-  <input type="text" id="result" readonly>
 
-  <script>
-    function generate() {
-      const site = encodeURIComponent(document.getElementById('site').value);
-      const title = encodeURIComponent(document.getElementById('title').value);
-      const img = encodeURIComponent(document.getElementById('img').value);
-      const url = encodeURIComponent(document.getElementById('url').value);
-      
-      const link = `${window.location.origin}/go?site=${site}&title=${title}&img=${img}&url=${url}`;
-      document.getElementById('result').value = link;
+<div class="card">
+  <h2>Generator Card Medsos</h2>
+  
+  <label>Nama Domain / Fanspage (misal: LUNA.COM)</label>
+  <input type="text" id="site" placeholder="Contoh: LUNA.COM atau RCTI-PLUS.COM">
+
+  <label>Judul Postingan / Video</label>
+  <input type="text" id="title" placeholder="Contoh: Ternyata Ini Cinta - Episode Baru">
+
+  <label>Upload Foto (Sudah ada tombol play)</label>
+  <input type="file" id="fileInput" accept="image/*">
+
+  <label>Link Affiliate Shopee Tujuan</label>
+  <input type="text" id="url" placeholder="https://s.shopee.co.id/xxx">
+
+  <button onclick="processAndGenerate()">Upload & Buat Link</button>
+  
+  <div id="status"></div>
+
+  <div class="result-box" id="resultContainer" style="display:none;">
+    <label>Hasil Link (Siap Diposting):</label>
+    <input type="text" id="resultLink" readonly onclick="this.select()">
+    <small style="color:#666;">Klik teks di atas untuk menyalin.</small>
+  </div>
+</div>
+
+<script>
+async function processAndGenerate() {
+  const site = document.getElementById('site').value;
+  const title = document.getElementById('title').value;
+  const url = document.getElementById('url').value;
+  const fileInput = document.getElementById('fileInput');
+  const status = document.getElementById('status');
+  const resultContainer = document.getElementById('resultContainer');
+  const resultLink = document.getElementById('resultLink');
+
+  if (!fileInput.files[0] || !url) {
+    alert("Harap pilih foto dan masukkan Link Affiliate!");
+    return;
+  }
+
+  status.innerText = "Mengunggah foto...";
+
+  try {
+    // Unggah foto otomatis ke hosting gambar gratis (tmpfiles.org API)
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    const response = await fetch('https://tmpfiles.org/api/v1/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      // Mengubah URL hasil upload agar bisa dibaca langsung sebagai gambar murni
+      const rawImgUrl = data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+
+      // Menyusun link Vercel akhir
+      const finalLink = `${window.location.origin}/go?site=${encodeURIComponent(site)}&title=${encodeURIComponent(title)}&img=${encodeURIComponent(rawImgUrl)}&url=${encodeURIComponent(url)}`;
+
+      status.innerText = "Selesai!";
+      resultContainer.style.display = 'block';
+      resultLink.value = finalLink;
+    } else {
+      status.innerText = "Gagal mengunggah gambar.";
     }
-  </script>
+  } catch (err) {
+    console.error(err);
+    status.innerText = "Terjadi kesalahan saat mengunggah foto.";
+  }
+}
+</script>
+
 </body>
 </html>
