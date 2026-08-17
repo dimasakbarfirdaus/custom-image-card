@@ -3,38 +3,34 @@ module.exports = (req, res) => {
 
   const cardTitle = title || "Nonton Video Selengkapnya";
   const cardSiteName = site || "LUNA.COM";
+  // Masukkan gambar default jika parameter img kosong
   const cardImg = img || "https://via.placeholder.com/1200x630.png";
   const redirectUrl = url || "https://shopee.co.id";
 
   const userAgent = (req.headers['user-agent'] || '').toLowerCase();
 
-  // Daftar lengkap User-Agent Bot Crawler Media Sosial
+  // Deteksi bot Facebook, WhatsApp, Twitter, Telegram, dll.
   const isBot = /facebookexternalhit|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|pinterest|slackbot|discordbot|googlebot/i.test(userAgent);
 
-  // 1. JIKA MANUSIA (Diklik dari Browser HP / Laptop):
-  // Langsung lempar (302 Redirect) ke Link Affiliate Shopee
+  // 1. MANUSIA REAL (Diakses dari HP / Laptop) -> REDIRECT KE SHOPEE
   if (!isBot && url) {
     res.writeHead(302, { Location: redirectUrl });
     return res.end();
   }
 
-  // 2. JIKA BOT MEDSOS (Facebook Crawler, WA, dll):
-  // Kirim MURNI HTML Metadata Open Graph TANPA script redirect / meta refresh sama sekali!
+  // 2. BOT MEDSOS (Crawling Gambar) -> TAMPILKAN METADATA TANPA REDIRECT
   const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <title>${cardTitle}</title>
 
-  <!-- Meta Tag Utama untuk Facebook / Meta Apps -->
+  <!-- Open Graph Tags untuk Facebook & WhatsApp -->
   <meta property="og:site_name" content="${cardSiteName}" />
   <meta property="og:title" content="${cardTitle}" />
-  <meta property="og:description" content="Klik gambar untuk melihat detail lengkapnya." />
+  <meta property="og:description" content="Klik gambar untuk melihat detail selengkapnya." />
   <meta property="og:image" content="${cardImg}" />
   <meta property="og:image:secure_url" content="${cardImg}" />
-  <meta property="og:image:type" content="image/jpeg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://${cardSiteName}" />
 
